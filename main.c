@@ -77,8 +77,22 @@ int second_chance(int8_t** page_table, int num_pages, int prev_page, int fifo_fr
 }
 
 
-int nru(int8_t** page_table, int num_pages, int prev_page,
-        int fifo_frm, int num_frames, int clock) {
+// NRU (Not Recently Used)
+int nru(int8_t** page_table, int num_pages, int prev_page, int fifo_frm, int num_frames, int clock) {
+    int candidate[4] = {-1, -1, -1, -1};
+    for (int i = 0; i < num_pages; i++) {
+        if (!page_table[i][PT_MAPPED]) continue;
+        int ref = page_table[i][PT_REFERENCE_BIT];
+        int dirty = page_table[i][PT_DIRTY];
+        int class_id = (ref << 1) | dirty;
+        if (candidate[class_id] == -1) {
+            candidate[class_id] = i;
+            if (class_id == 0) break;
+        }
+    }
+    for (int i = 0; i < 4; i++) {
+        if (candidate[i] != -1) return candidate[i];
+    }
     return -1;
 }
 
