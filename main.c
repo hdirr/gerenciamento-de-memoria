@@ -58,10 +58,24 @@ int fifo(int8_t** page_table, int num_pages, int prev_page, int fifo_frm, int nu
     return -1; // (não deveria ocorrer)
 }
 
-int second_chance(int8_t** page_table, int num_pages, int prev_page,
-                  int fifo_frm, int num_frames, int clock) {
+// Second Chance
+int second_chance(int8_t** page_table, int num_pages, int prev_page, int fifo_frm, int num_frames, int clock) {
+    int current_frame = fifo_frm;
+    for (int i = 0; i < num_pages * 2; i++) {
+        for (int j = 0; j < num_pages; j++) {
+            if (page_table[j][PT_MAPPED] && page_table[j][PT_FRAMEID] == current_frame) {
+                if (page_table[j][PT_REFERENCE_BIT]) {
+                    page_table[j][PT_REFERENCE_BIT] = 0;
+                    current_frame = (current_frame + 1) % num_frames;
+                } else {
+                    return j;
+                }
+            }
+        }
+    }
     return -1;
 }
+
 
 int nru(int8_t** page_table, int num_pages, int prev_page,
         int fifo_frm, int num_frames, int clock) {
@@ -226,7 +240,6 @@ int main(int argc, char **argv) {
             {"nru", *nru},
             {"aging", *aging},
             {"mfu", *mfu},
-            {"fifo", *fifo},
             {"random", *random_page}
     };
 
