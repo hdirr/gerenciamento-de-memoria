@@ -96,9 +96,20 @@ int nru(int8_t** page_table, int num_pages, int prev_page, int fifo_frm, int num
     return -1;
 }
 
-int aging(int8_t** page_table, int num_pages, int prev_page,
-          int fifo_frm, int num_frames, int clock) {
-    return -1;
+// Aging
+int aging(int8_t** page_table, int num_pages, int prev_page, int fifo_frm, int num_frames, int clock) {
+    int victim = -1;
+    int min_age = 256;
+    for (int i = 0; i < num_pages; i++) {
+        if (!page_table[i][PT_MAPPED]) continue;
+        page_table[i][PT_AGING_COUNTER] >>= 1;
+        page_table[i][PT_AGING_COUNTER] |= (page_table[i][PT_REFERENCE_BIT] << 7);
+        if (page_table[i][PT_AGING_COUNTER] < min_age) {
+            min_age = page_table[i][PT_AGING_COUNTER];
+            victim = i;
+        }
+    }
+    return victim;
 }
 
 int mfu(int8_t** page_table, int num_pages, int prev_page, int fifo_frm, int num_frames, int clock) {
