@@ -41,9 +41,21 @@ typedef struct {
 //
 // Adicione mais parâmetros caso ache necessário
 
-int fifo(int8_t** page_table, int num_pages, int prev_page,
-         int fifo_frm, int num_frames, int clock) {
-    return -1;
+// FIFO
+int fifo(int8_t** page_table, int num_pages, int prev_page, int fifo_frm, int num_frames, int clock) {
+    // Tenta encontrar a página que está usando a moldura fifo_frm
+    for (int i = 0; i < num_pages; i++) {
+        if (page_table[i][PT_MAPPED] && page_table[i][PT_FRAMEID] == fifo_frm) {
+            return i;
+        }
+    }
+    // Fallback: retorna a primeira página mapeada
+    for (int i = 0; i < num_pages; i++) {
+        if (page_table[i][PT_MAPPED]) {
+            return i;
+        }
+    }
+    return -1; // (não deveria ocorrer)
 }
 
 int second_chance(int8_t** page_table, int num_pages, int prev_page,
@@ -214,6 +226,7 @@ int main(int argc, char **argv) {
             {"nru", *nru},
             {"aging", *aging},
             {"mfu", *mfu},
+            {"fifo", *fifo},
             {"random", *random_page}
     };
 
